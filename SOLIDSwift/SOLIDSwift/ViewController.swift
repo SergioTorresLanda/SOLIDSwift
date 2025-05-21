@@ -120,7 +120,6 @@ struct FirebaseP :InvoicePersistable{
 
 //3. LISKOV-SUBSTITUTION
 //Derived or child classes/structs should be substitutable for their base parent classes
-
 enum APIError: Error {
     case invalidURL
     case invalidUResp
@@ -136,6 +135,37 @@ struct mockUserService{
         }
     }
 }
+//Functions that use pointers of references to base classes must be able to use objects of derived classes without knowing it. (inject portocol obj as param) ex: 
+protocol Polygon {
+    var area: Double {get}
+}
+
+class Rectangle: Polygon{
+    private let width: Double
+    private let lenght: Double
+    init(width: Double, lenght: Double) {
+        self.width = width
+        self.lenght = lenght
+    }
+    var area : Double {
+        return width*lenght
+    }
+}
+class Square: Polygon{
+    private let side: Double
+    init(side: Double) {
+        self.side = side
+    }
+    var area : Double {
+        return pow(side,2)
+    }
+}
+
+func printArea(polygon:Polygon){
+    print(polygon.area)
+}
+
+
 
 //4. NTERFACE-SEGREGATION (Atomic Protocols)
 //Do not force any client to implement an interface which is irrelevant to them.
