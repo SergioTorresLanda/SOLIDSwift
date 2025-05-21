@@ -119,6 +119,127 @@ struct FirebaseP :InvoicePersistable{
 }
 
 //3. LISKOV-SUBSTITUTION
+//Derived or child classes/structs should be substitutable for their base parent classes
+
+enum APIError: Error {
+    case invalidURL
+    case invalidUResp
+    case invalidStatus
+}
+
+struct mockUserService{
+    func fetchUser() async throws{
+        do{
+            throw APIError.invalidUResp // this is easily substitutable for URLError(.badURL) or any other err which conforms to Error parent class.
+        }catch{
+            print(error)
+        }
+    }
+}
+
+//4. NTERFACE-SEGREGATION (Atomic Protocols)
+//Do not force any client to implement an interface which is irrelevant to them.
+
+protocol GestureProtocol{
+    func didTap()
+    func didDoubleTap()
+    func didLongPress()
+}
+
+struct SuperButton:GestureProtocol{
+    func didTap() {
+    }
+    
+    func didDoubleTap() {
+    }
+    
+    func didLongPress() {
+    }
+}
+
+struct DoubleTapButton:GestureProtocol{
+    func didTap() {}//not used
+    func didDoubleTap() {
+        //do something
+    }
+    func didLongPress() {}//not used
+} //This struct does not comply with the principle since it implements several methods which are irrelevant to them. So segragate the protocol !! Now each struct can conform only to the protocols needed !
+
+    protocol TapProtocol{
+        func didTap()
+    }
+    protocol DoubleProtocol{
+        func didDoubleTap()
+    }
+    protocol LongProtocol{
+        func didLongPress()
+    }
+
+//5. DEPENDENCY INVERSION
+//High level modules should not depend on low level modules. but on abstractions.
+//If a HL module imports any LL module then the code becomes tightly couped
+//we want the code to be loosely coped
+//Changes in one class could breake another class.
+
+struct DebitCardPayment {
+    func execute(amount:Double){
+        print("Debit card payment success")
+    }
+}
+struct StripePayment : PaymentMethod{ //conform to protocol
+    func execute(amount:Double){
+        print("Stripe card payment success")
+    }
+}
+struct ApplePayPayment {
+    func execute(amount:Double){
+        print("ApplePay card payment success")
+    }
+}
+
+struct Payment{
+    var debitCardPayment: DebitCardPayment?
+    var stripePayment: StripePayment?
+    var applePayPayment: ApplePayPayment?
+}
+
+let paymentMethod = DebitCardPayment()
+let payment = Payment(debitCardPayment: paymentMethod, // This does not follow DIP
+                      stripePayment: nil,
+                      applePayPayment: nil)
+// payment.debitCardPayment?.execute(amount: 100) tightly couped (I dont exactly know which payment method is not nil)
+// payment.stripePayment?.execute(amount: 100) no way to knowing this PM is nil
+
+//Let's depend on absraction !
+
+protocol PaymentMethod {
+    func execute(amount: Double)
+}
+
+struct PaymentGood{
+    var payment: PaymentMethod //not a optional abstraction!!!
+    
+    func makePayment(amount: Double){
+        payment.execute(amount: amount)
+    }
+}
+
+let stripe = StripePayment() //create the actual instance
+let paymentGood = PaymentGood(payment: stripe) //inject to abstraction
+
+// paymentGood.makePayment(amount: 200) //cleaner !!
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
